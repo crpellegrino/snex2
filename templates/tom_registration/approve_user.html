@@ -1,0 +1,17 @@
+{% extends 'tom_common/base.html' %}
+{% load bootstrap4 static %}
+{% block title %}Approve user{% endblock %}
+{% block additional_css %}
+<link rel="stylesheet" href="{% static 'tom_targets/css/targets_snexclone.css' %}">
+{% endblock %}
+{% block content %}
+<form action="{% url 'registration:approve' object.id %}" method="POST">
+{% csrf_token %}
+{% bootstrap_form form %}
+{% buttons %}
+  <button type="submit" class="btn btn-primary">
+    Approve
+  </button>
+{% endbuttons %}
+</form>
+{% endblock %}

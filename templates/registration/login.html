@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load bootstrap4 static cache %}
+{% load bootstrap4 static cache registration_extras %}
 {% block title %}Login{% endblock %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_targets/css/targets_snexclone.css' %}">
@@ -7,13 +7,19 @@
 {% block content %}
 <div class="row justify-content-md-center">
   <div class="col-md-4">
-    <form action="{% url 'login' %}?next={{next}}" method="POST" class="form">
-      {% csrf_token %}
-      {% bootstrap_form form %}
-      {% buttons %}
-        <button type="submit" class="btn btn-primary">Login</button>
-      {% endbuttons %}
-    </form>
+    <div class="row">
+      <form action="{% url 'login' %}?next={{next}}" method="POST" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+          <button type="submit" class="btn btn-primary">Login</button>
+        {% endbuttons %}
+      </form>
+    </div>
+    <div class="row">
+      <span>Not a user? Register here:</span>
+      {% registration_button %}
+    </div>
   </div>
 </div>
 {% endblock %}

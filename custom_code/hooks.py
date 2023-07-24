@@ -886,3 +886,35 @@ def get_unreduced_spectra(allspec=True):
         imgpaths = [s.filepath.replace('/supernova/data/floyds', '/snex2/data/floyds') + s.filename.replace('.fits', '.png') for s in unreduced_spectra]
 
     return targetids, propids, dateobs, paths, filenames, imgpaths
+
+
+#def sync_user_request_with_snex1(user, plaintext_pw, wrapped_session=None):
+#    '''
+#    Hook to sync a User from SNEx2 to SNEx1
+#    '''
+#
+#    _snex1_address = 'mysql://{}:{}@supernova.science.lco.global:3306/supernova?charset=utf8&use_unicode=1'.format(os.environ['SNEX1_DB_USER'], os.environ['SNEX1_DB_PASSWORD'])
+#
+#    if wrapped_session:
+#        db_session = wrapped_session
+#
+#    else:
+#        db_session = _return_session(_snex1_address)
+#        
+#    UserRequests = _load_table('userrequests', db_address=_snex1_address) # Need to load this to sync pending user
+#    Groups = _load_table('groups', db_address=_snex1_address)
+#
+#    ###TODO: Get groupidcode from groups user belongs to
+#
+#    ###TODO: Hash the plaintext_pw in a way readable by SNEx1
+#
+#    ### Save the user as a requested user in SNEx1
+#    newuser = UserRequests(
+#            name=user.username,
+#            pw=user.password,
+#            datecreated=datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+#    )
+#    db_session.add(newuser)
+
+###TODO: Add a sync_user_with_snex1 hook for when a pending user is approved in SNEx2
+
