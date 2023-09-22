@@ -385,7 +385,7 @@ class CustomDataProductUploadView(DataProductUploadView):
                 if used_in:
                     rdextra_value['used_in'] = int(used_in.id)
                 rdextra_value['final_reduction'] = form.cleaned_data['final_reduction']
-                reduced_data = run_custom_data_processor(dp, extras)
+                reduced_data = run_custom_data_processor(dp, extras) #NOTE: pass and return rdextra_value here too (See note in run_custom_data_processor) 
                 reduced_datum_extra = ReducedDatumExtra(
                     target = target,
                     data_type = dp_type,
