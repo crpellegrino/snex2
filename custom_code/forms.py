@@ -132,6 +132,15 @@ class MultiField(forms.MultiValueField):
 
 
 class CustomDataProductUploadForm(DataProductUploadForm):
+
+    data_product_type = forms.ChoiceField(
+        choices = [v for k, v in settings.DATA_PRODUCT_TYPES.items() if k in ['photometry', 'spectroscopy']],
+        widget = forms.RadioSelect(),
+        required=True
+    )
+
+    ### Photometry fields:
+    
     photometry_type = forms.ChoiceField(
         choices=[('Aperture', 'Aperture'), 
                  ('PSF', 'PSF'),
@@ -141,14 +150,17 @@ class CustomDataProductUploadForm(DataProductUploadForm):
         required=False
     )
 
-    instrument = MultiField(
-        choices=[('LCO', 'LCO'), 
-                 ('Swift', 'Swift'), 
-                 ('Gaia', 'Gaia'),
-                 ('Tess', 'Tess')
-        ],
-        widget=InstrumentWidget,
-        help_text="Or add another instrument"
+    #instrument = MultiField(
+    #    choices=[('LCO', 'LCO'), 
+    #             ('Swift', 'Swift'), 
+    #             ('Gaia', 'Gaia'),
+    #             ('Tess', 'Tess')
+    #    ],
+    #    widget=InstrumentWidget,
+    #    help_text="Or add another instrument"
+    #)
+    instrument = forms.CharField(
+        required = False
     )
 
     background_subtracted = forms.BooleanField(
@@ -163,24 +175,43 @@ class CustomDataProductUploadForm(DataProductUploadForm):
         required=False
     )
 
-    #template_source = MultiField(
-    template_source = forms.ChoiceField(
-        choices=[('LCO', 'LCO'),
-                 ('SDSS', 'SDSS'),
-                 ('PS1', 'PS1'),
-        ],
-        #widget=TemplateSourceWidget,
-        widget=forms.RadioSelect(),
+    ##template_source = MultiField(
+    #template_source = forms.ChoiceField(
+    #    choices=[('LCO', 'LCO'),
+    #             ('SDSS', 'SDSS'),
+    #             ('PS1', 'PS1'),
+    #    ],
+    #    #widget=TemplateSourceWidget,
+    #    widget=forms.RadioSelect(),
+    #    required=False
+    #)
+    template_source = forms.CharField(
         required=False
     )
 
-    reducer_group = MultiField(
-        choices=[('LCO', 'LCO'),
-                 ('UC Davis', 'UC Davis'),
-                 ('U of A', 'U of A')
-        ],
-        help_text="Or add another group",
-        widget=ReducerGroupWidget
+    ### Spectroscopy fields:
+    telescope = forms.CharField(
+        required=False
+    )
+
+    exposure_time = forms.FloatField(
+        required=False
+    )
+
+    slit = forms.FloatField(
+        required=False
+    )
+
+    #reducer_group = MultiField(
+    #    choices=[('LCO', 'LCO'),
+    #             ('UC Davis', 'UC Davis'),
+    #             ('U of A', 'U of A')
+    #    ],
+    #    help_text="Or add another group",
+    #    widget=ReducerGroupWidget
+    #)
+    reducer_group = forms.CharField(
+        required=False
     )
 
     #used_in = forms.ChoiceField(

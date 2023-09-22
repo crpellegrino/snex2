@@ -33,12 +33,25 @@
 <h4>Upload a data product</h4>
 <form method="POST" action="{% url "custom-data-upload" %}" enctype="multipart/form-data">
   {% csrf_token %}
-  {% bootstrap_form data_product_form exclude='data_product_type,photometry_type,instrument,background_subtracted,subtraction_algorithm,reducer_group,used_in,final_reduction,template_source,groups' %}
+  {% bootstrap_form data_product_form exclude='data_product_type,photometry_type,instrument,background_subtracted,subtraction_algorithm,reducer_group,used_in,final_reduction,template_source,telescope,exposure_time,slit,groups' %}
   <div class="row">
     <div class="column" id="column-dataproducttype" style="width: 25%;">
       {{ data_product_form.data_product_type.label_tag }}</br>
       {{ data_product_form.data_product_type }}
     </div>
+    <div class="column" id="column-reducergroup" style="width: 25%;">
+      Reducer:</br>
+      {{ data_product_form.reducer_group }}
+    </div>
+    <div class="column" id="column-usedin" style="width: 25%;">
+      {{ data_product_form.used_in.label_tag }}</br>
+      {{ data_product_form.used_in }}
+    </div>
+    <div class="column" id="column-finalreduction" style="width: 25%;">
+      {{ data_product_form.final_reduction }} Final Reduction?</br>
+    </div>
+  </div>
+  <div class="row" style="padding-bottom: 20px;">
     <div class="column" id="column-photometrytype" style="width: 25%; display: none;">
       {{ data_product_form.photometry_type.label_tag }}</br>
       {{ data_product_form.photometry_type }}
@@ -61,17 +74,18 @@
       </div>
     </div>
   </div>
-  <div class="row" style="padding-bottom: 20px;">
-    <div class="column" id="column-reducergroup" style="width: 25%;">
-      {{ data_product_form.reducer_group.label_tag }}</br>
-      {{ data_product_form.reducer_group }}
+  <div class="row" style="padding-bottom: 20px; display: none;" id="spec-row">
+    <div class="column" id="column-telescope" style="width: 25%;">
+      {{ data_product_form.telescope.label_tag }}</br>
+      {{ data_product_form.telescope }}
     </div>
-    <div class="column" id="column-usedin" style="width: 25%;">
-      {{ data_product_form.used_in.label_tag }}</br>
-      {{ data_product_form.used_in }}
+    <div class="column" id="column-exposure-time" style="width: 25%;">
+      {{ data_product_form.exposure_time.label_tag }}</br>
+      {{ data_product_form.exposure_time }}
     </div>
-    <div class="column" id="column-finalreduction" style="width: 25%;">
-      {{ data_product_form.final_reduction }} Final Reduction?</br>
+    <div class="column" id="column-slit" style="width: 25%;">
+      {{ data_product_form.slit.label_tag }}</br>
+      {{ data_product_form.slit }}
     </div>
   </div>
   {% buttons %}
@@ -83,13 +97,20 @@
     $('#id_data_product_type_0').change(function() {
       document.getElementById("column-photometrytype").style.display = "block";
       document.getElementById("column-background").style.display = "block";
+      document.getElementById("spec-row").style.display = "none";
     });
-    for (var i = 1; i < 4; i++) {
-      $('#id_data_product_type_'+i).change(function() {
-        document.getElementById("column-photometrytype").style.display = "none";
-        document.getElementById("column-background").style.display = "none";
-      });
-    };
+    $('#id_data_product_type_1').change(function() {
+      document.getElementById("spec-row").style.display = "block";
+      document.getElementById("column-photometrytype").style.display = "none";
+      document.getElementById("column-background").style.display = "none";
+    });
+    //for (var i = 1; i < 4; i++) {
+    //  $('#id_data_product_type_'+i).change(function() {
+    //    document.getElementById("column-photometrytype").style.display = "none";
+    //    document.getElementById("column-background").style.display = "none";
+    //    document.getElementById("spec-row").style.display = "none";
+    //  });
+    //};
   });
   $('#id_background_subtracted').change(function() {
     if (document.getElementById("id_background_subtracted").checked == true) {

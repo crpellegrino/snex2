@@ -14,20 +14,20 @@ from datetime import datetime
 class SpecProcessor(SpectroscopyProcessor):
 
     FITS_MIMETYPES = ['image/fits', 'application/fits']
-    PLAINTEXT_MIMETYPES = ['text/plain', 'text/csv']
+    PLAINTEXT_MIMETYPES = ['text/plain', 'text/csv', 'text/ascii']
     DEFAULT_FLUX_CONSTANT = (1e-15 * units.erg) / units.cm ** 2 / units.second / units.angstrom
  
-    def process_data(self, data_product, extras):
+    def process_data(self, data_product, rd_extras): #NOTE: accept both extras and rd_extras
         mimetype = mimetypes.guess_type(data_product.data.name)[0]
         if mimetype in self.FITS_MIMETYPES:
-            spectrum, obs_date = self._process_spectrum_from_fits(data_product)
+            spectrum, obs_date = self._process_spectrum_from_fits(data_product) #NOTE: Pass and return rd_extras here
         elif mimetype in self.PLAINTEXT_MIMETYPES:
-            spectrum, obs_date = self._process_spectrum_from_plaintext(data_product)
+            spectrum, obs_date = self._process_spectrum_from_plaintext(data_product) #NOTE: Pass and return rd_extras here
         else:
             raise InvalidFileFormatException('Unsupported file type')
         serialized_spectrum = SpectrumSerializer().serialize(spectrum)
 
-        return [(obs_date, serialized_spectrum)]
+        return [(obs_date, serialized_spectrum)] #NOTE: return rd_extras here too
 
     def _process_spectrum_from_fits(self, data_product):
 
@@ -58,3 +58,7 @@ class SpecProcessor(SpectroscopyProcessor):
         spectrum = Spectrum1D(flux=flux, wcs=wcs)
 
         return spectrum, Time(date_obs).to_datetime()
+
+    #def _process_spectrum_from_plaintext(self, data_product, rd_extras):
+    #    process from plaintext, add header keywords if they dont exist in rd_extras
+    #    return spectrum, Time(...), rd_extras

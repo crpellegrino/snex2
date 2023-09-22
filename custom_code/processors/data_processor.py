@@ -4,7 +4,7 @@ from tom_dataproducts.models import ReducedDatum
 
 DEFAULT_DATA_PROCESSOR_CLASS = 'tom_dataproducts.data_processor.DataProcessor'
 
-def run_custom_data_processor(dp, extras):
+def run_custom_data_processor(dp, extras): #NOTE: Accept rd_extras here too
     try:
         processor_class = settings.DATA_PROCESSORS[dp.data_product_type]
     except Exception:
@@ -17,12 +17,12 @@ def run_custom_data_processor(dp, extras):
     except (ImportError, AttributeError):
         raise ImportError('Could not import {}. Did you provide the correct path?'.format(processor_class))
     data_processor = clazz()
-    data = data_processor.process_data(dp, extras)
+    data = data_processor.process_data(dp, extras) #NOTE: pass and return rd_extras here too (see note in process_data)
 
     reduced_datums = [ReducedDatum(target=dp.target, data_product=dp, data_type=dp.data_product_type,
                                    timestamp=datum[0], value=datum[1]) for datum in data]
     ReducedDatum.objects.bulk_create(reduced_datums)
 
-    return ReducedDatum.objects.filter(data_product=dp)
+    return ReducedDatum.objects.filter(data_product=dp) #NOTE: return rd_extras here (will save it in CustomDataProductUploadView)
 
 
