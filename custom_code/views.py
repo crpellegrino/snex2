@@ -371,16 +371,23 @@ class CustomDataProductUploadView(DataProductUploadView):
 
                 else: #Don't need to append anything to reduceddatum value if not photometry
                     extras = {}
+                    rdextra_value['telescope'] = form.cleaned_data['telescope']
+                    rdextra_value['exptime'] = form.cleaned_data['exposure_time']
+                    rdextra_value['slit'] = form.cleaned_data['slit']
+                    rdextra_value['date_obs'] = form.cleaned_data['date_obs']
+                
                 rdextra_value['instrument'] = form.cleaned_data['instrument']
                 reducer_group = form.cleaned_data['reducer_group']
-                if reducer_group != 'LCO':
+                if dp_type == 'spectroscopy':
+                    rdextra_value['reducer'] = reducer_group
+                elif dp_type == 'photometry' and reducer_group != 'LCO':
                     rdextra_value['reducer_group'] = reducer_group
 
                 used_in = form.cleaned_data['used_in']
                 if used_in:
                     rdextra_value['used_in'] = int(used_in.id)
                 rdextra_value['final_reduction'] = form.cleaned_data['final_reduction']
-                reduced_data = run_custom_data_processor(dp, extras) #NOTE: pass and return rdextra_value here too (See note in run_custom_data_processor) 
+                reduced_data = run_custom_data_processor(dp, extras, rdextra_value)
                 reduced_datum_extra = ReducedDatumExtra(
                     target = target,
                     data_type = dp_type,
