@@ -31,11 +31,11 @@ class SpecProcessor(SpectroscopyProcessor):
 
         return [(obs_date, serialized_spectrum)], rd_extras
 
+
     def _process_spectrum_from_fits(self, data_product, rd_extras):
 
         data_aws = default_storage.open(data_product.data.name, 'rb')
                 
-
         flux, header = fits.getdata(data_aws.open(), header=True)
         
         for facility_class in get_service_classes():
@@ -46,7 +46,10 @@ class SpecProcessor(SpectroscopyProcessor):
                 break
         else:
             flux_constant = self.DEFAULT_FLUX_CONSTANT
-            date_obs = datetime.now()
+            if 'date_obs' in rd_extras.keys() and rd_extras.get('date_obs', '') != '':
+                date_obs = rd_extras['date_obs']
+            else:
+                date_obs = datetime.now()
 
         for keyword in rd_extras.keys():
             if not rd_extras.get(keyword):
@@ -100,8 +103,8 @@ class SpecProcessor(SpectroscopyProcessor):
             else:
                 delim = ':'
 
-            if 'date_obs' in rd_extras.keys():
-                date_obs = rd_extras.get('date_obs')
+            if 'date_obs' in rd_extras.keys() and rd_extras.get('date_obs', '') != '':
+                date_obs = rd_extras['date_obs']
             elif 'date-obs' in comment.lower():
                 date_obs = comment.split(delim)[1].split('/')[0].strip()
 
