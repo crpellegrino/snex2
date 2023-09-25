@@ -434,20 +434,15 @@ class CustomDataProductUploadView(DataProductUploadView):
 
 class CustomDataProductDeleteView(DataProductDeleteView):
 
-    def delete(self, request, *args, **kwargs):
-        rd = ReducedDatum.objects.filter(data_product=self.get_object())
-        for r in rd:
-            data_type = r.data_type
-            r.delete()
+    def form_valid(self, request, *args, **kwargs):
         # Delete the ReducedDatumExtra row
-        reduced_datum_query = ReducedDatumExtra.objects.filter(data_type=data_type, key='upload_extras')
+        reduced_datum_query = ReducedDatumExtra.objects.filter(key='upload_extras')
         for row in reduced_datum_query:
             value = json.loads(row.value) 
             if value.get('data_product_id', '') == int(self.get_object().id):
                 row.delete()
                 break
-        self.get_object().data.delete()
-        return super().delete(request, *args, **kwargs)
+        return self.delete(request, *args, **kwargs)
 
 
 def save_dataproduct_groups_view(request):

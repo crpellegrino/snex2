@@ -12,16 +12,16 @@ from tom_dataproducts.exceptions import InvalidFileFormatException
 
 class PhotometryProcessor(DataProcessor):
 
-    def process_data(self, data_product, extras): #NOTE: accept both extras and rd_extras
+    def process_data(self, data_product, extras, rd_extras):
 
         mimetype = mimetypes.guess_type(data_product.data.name)[0]
         if mimetype in self.PLAINTEXT_MIMETYPES:
-            photometry = self._process_photometry_from_plaintext(data_product, extras)
-            return [(datum.pop('timestamp'), json.dumps(datum)) for datum in photometry] #NOTE: return rd_extras here too
+            photometry, rd_extras = self._process_photometry_from_plaintext(data_product, extras, rd_extras)
+            return [(datum.pop('timestamp'), json.dumps(datum)) for datum in photometry], rd_extras
         else:
             raise InvalidFileFormatException('Unsupported file type')
 
-    def _process_photometry_from_plaintext(self, data_product, extras): #NOTE: Is there any rd_extras processing to be done here?
+    def _process_photometry_from_plaintext(self, data_product, extras, rd_extras):
 
         photometry = []
 
@@ -31,6 +31,17 @@ class PhotometryProcessor(DataProcessor):
 
         if len(data) < 1:
             raise InvalidFileFormatException('Empty table or invalid file type')
+
+        comments = data.meta.get('comments', [])
+        for comment in comments:
+            if '=' in comment:
+                delim = '='
+            else:
+                delim = ':'
+
+            keyword = comment.split(delim)[0].lower()
+            if keyword in rd_extras.keys() and not rd_extras.get(keyword, ''):
+                rd_extras[keyword] = comment.split(delim)[1].strip()
 
         for datum in data:
             time = Time(float(datum['time']), format='mjd')
@@ -46,5 +57,5 @@ class PhotometryProcessor(DataProcessor):
 
             photometry.append(value)
 
-        return photometry
+        return photometry, rd_extras
 
