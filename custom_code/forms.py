@@ -202,6 +202,11 @@ class CustomDataProductUploadForm(DataProductUploadForm):
         required=False
     )
 
+    date_obs = forms.DateTimeField(
+        required=False,
+        label='Date observed (YYYY-MM-DD HH:MM:SS)'
+    )
+
     #reducer_group = MultiField(
     #    choices=[('LCO', 'LCO'),
     #             ('UC Davis', 'UC Davis'),
