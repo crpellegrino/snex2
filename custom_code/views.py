@@ -48,7 +48,8 @@ from plotly import offline
 import plotly.graph_objs as go
 from tom_dataproducts.models import ReducedDatum, DataProduct
 from django.utils.safestring import mark_safe
-from custom_code.templatetags.custom_code_tags import get_24hr_airmass, airmass_collapse, lightcurve_collapse, spectra_collapse, lightcurve_fits, lightcurve_with_extras, get_best_name, dash_spectra_page, scheduling_list_with_form, smart_name_list
+from custom_code.templatetags.custom_code_tags import get_24hr_airmass, airmass_collapse, lightcurve_collapse, spectra_collapse, lightcurve_fits, lightcurve_with_extras, get_best_name, scheduling_list_with_form, smart_name_list
+from dash_spectra.templatetags.dash_spectra_tags import dash_spectra
 from custom_code.hooks import _get_tns_params, _return_session, get_unreduced_spectra
 from custom_code.thumbnails import make_thumb
 
@@ -1082,7 +1083,7 @@ def async_spectra_page_view(request):
     target_id = request.GET.get('target_id')
     if target_id:
         target = Target.objects.get(id=target_id)
-        response = dash_spectra_page({'request': request}, target)
+        response = dash_spectra({'request': request}, target, individual=True)
         if 'dash_context' in response.keys():
             context = {'plot_list': [],
                        'request': request
@@ -1093,7 +1094,7 @@ def async_spectra_page_view(request):
             }
 
         html = render_to_string(
-            template_name='custom_code/dash_spectra_page.html',
+            template_name='dash_spectra/dash_spectra_page.html',
             context=context
         )
         data_dict = {'html_from_view': html}

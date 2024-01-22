@@ -15,8 +15,8 @@
       <div class="row">{{ comment }}</div>
       {% endfor %}
       <div class="row">
-	<input id="comment-{{ entry.spectrum.id }}" type="text" name="comment" placeholder="Add a comment">
-	<input onclick="savecomment({{ entry.spectrum.id }})" type="submit" class="btn btn-primary btn-post" name="submit" value="Submit">
+        <input id="comment-{{ entry.spectrum.id }}" type="text" name="comment" placeholder="Add a comment">
+        <input onclick="savecomment({{ entry.spectrum.id }})" type="submit" class="btn btn-primary btn-post" name="submit" value="Submit">
       </div>
     </td>
     <td width=1100>
@@ -26,3 +26,4 @@
 {% endfor %}
 </tbody>
 </table>
+

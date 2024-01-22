@@ -21,7 +21,8 @@ from django.urls import include
 from custom_code.views import *
 from custom_code.api_views import CustomDataProductViewSet, CustomObservationRecordViewSet
 from rest_framework.routers import DefaultRouter
-from custom_code.dash_apps import lightcurve, spectra, spectra_individual
+from custom_code.dash_apps import lightcurve#, spectra, spectra_individual
+from dash_spectra import spectra_class_individual, spectra_class
 from gw.views import *
 
 custom_router = DefaultRouter()

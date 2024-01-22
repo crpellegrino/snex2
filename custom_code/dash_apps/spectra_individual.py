@@ -67,83 +67,96 @@ table_body_one =[html.Tbody([])]
 table_body_two =[html.Tbody([])]
 
 app.layout = html.Div([
-    dcc.Graph(id='table-editing-simple-output',
-              figure = {'layout' : {'height': 350,
-                                    'margin': {'l': 60, 'b': 30, 'r': 60, 't': 10},
-                                    'yaxis': {'type': 'linear', 'tickformat': '.1e'},
-                                    'xaxis': {'showgrid': False},
-                                    'legend': {'x': 0.85, 'y': 1.0},
-                                    },
-                        'data' : []#[go.Scatter({'x': [], 'y': []})]
-                    }
-    ),
-    html.Div([
-        dcc.Input(id='spectrum_id', type='hidden', value=0),
-        dcc.Input(id='target_redshift', type='hidden', value=0),
-        dcc.Input(id='min-flux', type='hidden', value=0),
-        dcc.Input(id='max-flux', type='hidden', value=0),
-        html.Div('Binning Factor: ', style={'color': 'black', 'fontSize': 18}),
-        dcc.Input(id='bin-factor', type='number', value=5, size=2),
-        dcc.Checklist(
-            id='line-plotting-checklist',
-            options=[{'label': 'Show line plotting interface', 'value': 'display'}],
-            value='',
-            style={'fontSize': 18}
-        ),
-        html.Div(
-            children=[],
-            id='checked-rows',
-            style={'display': 'none'}
-        ),
-        html.Div(
-            children=[
+    dbc.Row([
+        dbc.Col(
+            dbc.Row([
+                dcc.Graph(id='table-editing-simple-output',
+                          figure = {'layout' : {'height': 400,
+                                                'width': 650,
+                                                'margin': {'l': 60, 'b': 30, 'r': 60, 't': 10},
+                                                'yaxis': {'type': 'linear', 'tickformat': '.1e'},
+                                                'xaxis': {'showgrid': False},
+                                                'legend': {'x': 0.85, 'y': 1.0},
+                                                },
+                                    'data' : []#[go.Scatter({'x': [], 'y': []})]
+                                },
+                ),
+                dcc.Input(id='spectrum_id', type='hidden', value=0),
+                dcc.Input(id='target_redshift', type='hidden', value=0),
+                dcc.Input(id='min-flux', type='hidden', value=0),
+                dcc.Input(id='max-flux', type='hidden', value=0),
                 dbc.Row([
-                    dbc.Table(
-                        html.Tbody([
-                            html.Tr([
-                                html.Td(
-                                    dbc.Table(table_body_one, bordered=True),
-                                ),
-                                html.Td(
-                                    dbc.Table(table_body_two, bordered=True),
-                                )
-                            ]),
-                        ])
-                    )
-                ])
-            ],
-            id='table-container-div',
-            style={'display': 'none'}
+                    html.Div('Binning Factor: ', style={'color': 'black', 'fontSize': 18}),
+                    dcc.Input(id='bin-factor', type='number', value=5, size=2, style={'width': '50px'}),
+                ], style={'margin-left': '5%'}),
+            ]),
         ),
-        dcc.Checklist(
-            id='compare-spectra-checklist',
-            options=[{'label': 'Compare this spectrum to another object?', 'value': 'display'}],
-            value='',
-            style={'fontSize': 18}
-        ),
-        html.Div([
-            html.Form(
-                autoComplete='off',
-                children=[ 
-                    dcc.Dropdown(
-                        options=[{'label': '', 'value': ''}],
+        dbc.Col(
+            dbc.Row([
+                html.Div([
+                    dcc.Checklist(
+                        id='line-plotting-checklist',
+                        options=[{'label': 'Show line plotting interface', 'value': 'display'}],
                         value='',
-                        placeholder='Search for a target',
-                        id='spectra-compare-dropdown',
-                        style={'z-index': '10'}
-                    )
-                ],
-                id='spectra-compare-results',
-                style={'display': 'none'}
-            )
-        ]),
-        dcc.Checklist(
-            id='mask-lines-checklist',
-            options=[{'label': 'Mask galaxy emission lines', 'value': 'mask'}],
-            value='',
-            style={'fontSize': 18}
-        ),
-    ], style={'overflow-y': 'auto'}),
+                        style={'fontSize': 18}
+                    ),
+                    html.Div(
+                        children=[],
+                        id='checked-rows',
+                        style={'display': 'none'}
+                    ),
+                    html.Div(
+                        children=[
+                            dbc.Row([
+                                dbc.Table(
+                                    html.Tbody([
+                                        html.Tr([
+                                            html.Td(
+                                                dbc.Table(table_body_one, bordered=True),
+                                            ),
+                                            html.Td(
+                                                dbc.Table(table_body_two, bordered=True),
+                                            )
+                                        ]),
+                                    ])
+                                )
+                            ])
+                        ],
+                        id='table-container-div',
+                        style={'display': 'none'}
+                    ),
+                    dcc.Checklist(
+                        id='compare-spectra-checklist',
+                        options=[{'label': 'Compare this spectrum to another object?', 'value': 'display'}],
+                        value='',
+                        style={'fontSize': 18}
+                    ),
+                    html.Div([
+                        html.Form(
+                            autoComplete='off',
+                            children=[ 
+                                dcc.Dropdown(
+                                    options=[{'label': '', 'value': ''}],
+                                    value='',
+                                    placeholder='Search for a target',
+                                    id='spectra-compare-dropdown',
+                                    style={'z-index': '10'}
+                                )
+                            ],
+                            id='spectra-compare-results',
+                            style={'display': 'none'}
+                        )
+                    ]),
+                    dcc.Checklist(
+                        id='mask-lines-checklist',
+                        options=[{'label': 'Mask galaxy emission lines', 'value': 'mask'}],
+                        value='',
+                        style={'fontSize': 18}
+                    ),
+                ]),
+            ])
+        )
+    ]),
 ], style={'padding-bottom': '0px'})
 
 
@@ -247,7 +260,8 @@ def change_redshift(z, *args, **kwargs):
                 style={"padding-left": "1rem"},
             ),
             html.Td(
-                elem
+                elem,
+                style={"font-size": "12px"}
             ),
             html.Td(
                dbc.Badge(
@@ -263,14 +277,16 @@ def change_redshift(z, *args, **kwargs):
                     min=0,
                     max=10,
                     step=0.0000001,
-                    placeholder='z'
+                    placeholder='z',
+                    style={"font-size": "12px", "width": "70px"}
                 )
             ),
             html.Td(
                 dbc.Input(
                     id='v-'+elem.replace(' ', '-'),
                     type='number',
-                    placeholder='v = 0 (km/s)',
+                    placeholder='v = 0 km/s',
+                    style={"font-size": "12px", "width": "100px"}
                     #value=0
                 ),
                 colSpan=2,
@@ -286,7 +302,8 @@ def change_redshift(z, *args, **kwargs):
                 dbc.Checkbox(id='standalone-checkbox-'+elem.replace(' ', '-'))
             ),
             html.Td(
-                elem
+                elem,
+                style={"font-size": "12px"}
             ),
             html.Td(
                dbc.Badge(
@@ -302,14 +319,16 @@ def change_redshift(z, *args, **kwargs):
                     min=0,
                     max=10,
                     step=0.0000001,
-                    placeholder='z'
+                    placeholder='z',
+                    style={"font-size": "12px", "width": "70px"}
                 )
             ),
             html.Td(
                 dbc.Input(
                     id='v-'+elem.replace(' ', '-'),
                     type='number',
-                    placeholder='v = 0 (km/s)',
+                    placeholder='v = 0 km/s',
+                    style={"font-size": "12px", "width": "100px"}
                     #value=0
                 ),
                 colSpan=2,
@@ -333,7 +352,8 @@ def change_redshift(z, *args, **kwargs):
                         min=0,
                         max=1e5,
                         step=0.1,
-                        placeholder='Wavelength'
+                        placeholder='Wl.',
+                        style={"font-size": "12px", "width": "70px"}
                     )
                 ]),
                 colSpan=2
@@ -346,14 +366,16 @@ def change_redshift(z, *args, **kwargs):
                     max=10,
                     step=0.00000001,
                     placeholder='z',
-                    value=z
+                    value=z,
+                    style={"font-size": "12px", "width": "70px"}
                 )
             ),
             html.Td(
                 dbc.Input(
                     id='v-custom1',
                     type='number',
-                    placeholder='v = 0 (km/s)',
+                    placeholder='v = 0 km/s',
+                    style={"font-size": "12px", "width": "100px"}
                 )
             )
         ])
@@ -375,7 +397,8 @@ def change_redshift(z, *args, **kwargs):
                         min=0,
                         max=1e5,
                         step=0.1,
-                        placeholder='Wavelength'
+                        placeholder='Wl.',
+                        style={"font-size": "12px", "width": "70px"}
                     )
                 ]),
                 colSpan=2
@@ -388,14 +411,16 @@ def change_redshift(z, *args, **kwargs):
                     max=10,
                     step=0.00000001,
                     placeholder='z',
-                    value=z
+                    value=z,
+                    style={"font-size": "12px", "width": "70px"}
                 )
             ),
             html.Td(
                 dbc.Input(
                     id='v-custom2',
                     type='number',
-                    placeholder='v = 0 (km/s)',
+                    placeholder='v = 0 km/s',
+                    style={"font-size": "12px", "width": "100px"}
                 )
             )
         ])
