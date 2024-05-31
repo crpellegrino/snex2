@@ -13,7 +13,7 @@ from django_plotly_dash import DjangoDash
 from django.conf import settings
 from tom_dataproducts.models import ReducedDatum
 from tom_targets.models import Target, TargetExtra
-from custom_code.templatetags.custom_code_tags import bin_spectra
+from .util import bin_spectra
 from django.db.models import Q
 from django.templatetags.static import static
 import logging

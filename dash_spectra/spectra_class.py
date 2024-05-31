@@ -11,7 +11,7 @@ import json
 from django_plotly_dash import DjangoDash
 from django.conf import settings
 from tom_dataproducts.models import ReducedDatum
-from custom_code.templatetags.custom_code_tags import bin_spectra
+from .util import bin_spectra
 from django.templatetags.static import static
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
