@@ -16,7 +16,6 @@ from tom_targets.models import Target, TargetExtra
 from custom_code.templatetags.custom_code_tags import bin_spectra
 from django.db.models import Q
 from django.templatetags.static import static
-import matplotlib.pyplot as plt
 import logging
 
 logger = logging.getLogger(__name__)
