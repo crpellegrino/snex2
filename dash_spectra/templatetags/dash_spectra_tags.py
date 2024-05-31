@@ -1,5 +1,5 @@
-import numpy as np
 from tom_dataproducts.models import ReducedDatum
+from tom_targets.models import TargetExtra
 from django import template
 
 register = template.Library()

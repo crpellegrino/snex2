@@ -1,9 +1,6 @@
-import dash
+from dash import dcc, html
 from dash.dependencies import Input, Output, State
-import dash_table
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
 import plotly.graph_objs as go
 import numpy as np
 import json
@@ -13,10 +10,9 @@ from django_plotly_dash import DjangoDash
 from django.conf import settings
 from tom_dataproducts.models import ReducedDatum
 from tom_targets.models import Target, TargetExtra
-from custom_code.templatetags.custom_code_tags import bin_spectra
+from .util import bin_spectra
 from django.db.models import Q
 from django.templatetags.static import static
-import matplotlib.pyplot as plt
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,19 +1,14 @@
-import dash
+from dash import dcc, html
 from dash.dependencies import Input, Output, State
-import dash_table
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
 import plotly.graph_objs as go
-import numpy as np
 import json
 
 from django_plotly_dash import DjangoDash
 from django.conf import settings
 from tom_dataproducts.models import ReducedDatum
-from custom_code.templatetags.custom_code_tags import bin_spectra
+from .util import bin_spectra
 from django.templatetags.static import static
-import matplotlib.pyplot as plt
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = DjangoDash(name='Spectra_Class', id='target_id', add_bootstrap_links=True, suppress_callback_exceptions=True)
@@ -329,13 +324,7 @@ class Spectra:
                 spectral_dataproducts = ReducedDatum.objects.filter(target_id=target_id, data_type='spectroscopy').order_by('timestamp')
                 if not spectral_dataproducts:
                     return 'No spectra yet'
-                colormap = plt.cm.gist_rainbow
-                colors = [colormap(i) for i in np.linspace(0.99, 0., len(spectral_dataproducts))]
-                rgb_colors = ['rgb({r}, {g}, {b})'.format(
-                    r=int(color[0]*255),
-                    g=int(color[1]*255),
-                    b=int(color[2]*255),
-                ) for color in colors]
+                rgb_colors = go.colors.sample_colorscale('rainbow_r', len(spectral_dataproducts))
                 all_data = []
                 for i in range(len(spectral_dataproducts)):
                     spectrum = spectral_dataproducts[i]
