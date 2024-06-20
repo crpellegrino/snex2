@@ -1343,6 +1343,21 @@ def dash_spectra_page(context, target):
             
             else:
                 spec_extras = {}
+        elif spectrum.data_product_id:
+            spec_extras_row = ReducedDatumExtra.objects.filter(data_type='spectroscopy', key='upload_extras', value__icontains='"data_product_id": {}'.format(spectrum.data_product_id)).first()
+            if spec_extras_row:
+                spec_extras = json.loads(spec_extras_row.value)
+                if spec_extras.get('instrument', '') == 'en06':
+                    spec_extras['site'] = '(OGG 2m)'
+                    spec_extras['instrument'] += ' (FLOYDS)'
+                elif spec_extras.get('instrument', '') == 'en12':
+                    spec_extras['site'] = '(COJ 2m)'
+                    spec_extras['instrument'] += ' (FLOYDS)'
+
+                content_type_id = ContentType.objects.get(model='reduceddatum').id
+                comments = Comment.objects.filter(object_pk=spectrum.id, content_type_id=content_type_id).order_by('id')
+                comment_list = ['{}: {}'.format(User.objects.get(username=comment.user_name).first_name, comment.comment) for comment in comments]
+                spec_extras['comments'] = comment_list
         else:
             spec_extras = {}
 

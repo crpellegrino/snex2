@@ -371,16 +371,23 @@ class CustomDataProductUploadView(DataProductUploadView):
 
                 else: #Don't need to append anything to reduceddatum value if not photometry
                     extras = {}
+                    rdextra_value['telescope'] = form.cleaned_data['telescope']
+                    rdextra_value['exptime'] = form.cleaned_data['exposure_time']
+                    rdextra_value['slit'] = form.cleaned_data['slit']
+                    rdextra_value['date_obs'] = form.cleaned_data['date_obs']
+                
                 rdextra_value['instrument'] = form.cleaned_data['instrument']
                 reducer_group = form.cleaned_data['reducer_group']
-                if reducer_group != 'LCO':
+                if dp_type == 'spectroscopy':
+                    rdextra_value['reducer'] = reducer_group
+                elif dp_type == 'photometry' and reducer_group != 'LCO':
                     rdextra_value['reducer_group'] = reducer_group
 
                 used_in = form.cleaned_data['used_in']
                 if used_in:
                     rdextra_value['used_in'] = int(used_in.id)
                 rdextra_value['final_reduction'] = form.cleaned_data['final_reduction']
-                reduced_data = run_custom_data_processor(dp, extras)
+                reduced_data = run_custom_data_processor(dp, extras, rdextra_value)
                 reduced_datum_extra = ReducedDatumExtra(
                     target = target,
                     data_type = dp_type,
@@ -422,20 +429,15 @@ class CustomDataProductUploadView(DataProductUploadView):
 
 class CustomDataProductDeleteView(DataProductDeleteView):
 
-    def delete(self, request, *args, **kwargs):
-        rd = ReducedDatum.objects.filter(data_product=self.get_object())
-        for r in rd:
-            data_type = r.data_type
-            r.delete()
+    def form_valid(self, request, *args, **kwargs):
         # Delete the ReducedDatumExtra row
-        reduced_datum_query = ReducedDatumExtra.objects.filter(data_type=data_type, key='upload_extras')
+        reduced_datum_query = ReducedDatumExtra.objects.filter(key='upload_extras')
         for row in reduced_datum_query:
             value = json.loads(row.value) 
             if value.get('data_product_id', '') == int(self.get_object().id):
                 row.delete()
                 break
-        self.get_object().data.delete()
-        return super().delete(request, *args, **kwargs)
+        return self.delete(request, *args, **kwargs)
 
 
 def save_dataproduct_groups_view(request):
