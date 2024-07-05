@@ -407,7 +407,6 @@ class CustomDataProductUploadView(DataProductUploadView):
             except InvalidFileFormatException as iffe:
                 ReducedDatum.objects.filter(data_product=dp).delete()
                 dp.delete()
-                ReducedDatumExtra.objects.filter(target=target, value=json.dumps(rdextra_value)).delete()
                 messages.error(
                     self.request,
                     'File format invalid for file {0} -- error was {1}'.format(str(dp), iffe)

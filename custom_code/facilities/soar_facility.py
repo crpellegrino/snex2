@@ -1,6 +1,7 @@
 import copy
 import requests
 
+from tom_common.exceptions import ImproperCredentialsException
 from tom_observations.facilities.soar import SOARFacility, SOARSpectroscopyObservationForm
 from tom_observations.facilities.lco import LCOSpectroscopyObservationForm
 from django import forms
@@ -73,12 +74,6 @@ class SOARObservationForm(SOARSpectroscopyObservationForm, LCOSpectroscopyObserv
             ins['optical_elements'].get('gratings', [])
         ])
 
-    def readout_choices(self):
-        return set([
-            (f['code'], f['name']) for ins in self._get_instruments().values() for f in 
-            ins['modes']['readout'].get('modes', []) if 'Image' not in f['name']
-        ])
-
 
     def clean_start(self):
         # Took care of this in clean method, so ignore
@@ -126,7 +121,7 @@ class SOARObservationForm(SOARSpectroscopyObservationForm, LCOSpectroscopyObserv
         self.fields['instrument_type'] = forms.ChoiceField(choices=self.instrument_choices(), initial='SOAR_GHTS_REDCAM', label='')
         self.fields['grating'] = forms.ChoiceField(choices=self.grating_choices(), initial='400_SYGY', label='')
         self.fields['filter'] = forms.ChoiceField(choices=list(self.filter_choices()), initial=list(self.filter_choices())[0][0], label='')
-        self.fields['readout'] = forms.ChoiceField(choices=self.readout_choices(), initial='GHTS_R_400m1_2x2', label='')
+        self.fields['readout'] = forms.ChoiceField(choices=self.mode_choices('readout'), initial='GHTS_R_400m1_2x2', label='')
 
         for field_name in ['start', 'end', 'name', 'groups']:
             self.fields[field_name].widget = forms.HiddenInput()

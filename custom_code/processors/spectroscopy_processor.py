@@ -26,7 +26,10 @@ class SpecProcessor(SpectroscopyProcessor):
         elif mimetype in self.PLAINTEXT_MIMETYPES:
             spectrum, obs_date, rd_extras = self._process_spectrum_from_plaintext(data_product, rd_extras)
         else:
-            raise InvalidFileFormatException('Unsupported file type')
+            try:
+                spectrum, obs_date, rd_extras = self._process_spectrum_from_plaintext(data_product, rd_extras)
+            except:
+                raise InvalidFileFormatException('Unsupported file type')
         serialized_spectrum = SpectrumSerializer().serialize(spectrum)
 
         return [(obs_date, serialized_spectrum)], rd_extras
@@ -94,7 +97,9 @@ class SpecProcessor(SpectroscopyProcessor):
         if len(data) < 1:
             raise InvalidFileFormatException('Empty table or invalid file type')
         facility_name = None
-        date_obs = datetime.now()
+
+        date_obs = rd_extras.get('date_obs', None)
+
         comments = data.meta.get('comments', [])
 
         for comment in comments:
@@ -103,10 +108,10 @@ class SpecProcessor(SpectroscopyProcessor):
             else:
                 delim = ':'
 
-            if 'date_obs' in rd_extras.keys() and rd_extras.get('date_obs', '') != '':
-                date_obs = rd_extras['date_obs']
-            elif 'date-obs' in comment.lower():
+            if not date_obs and 'date-obs' in comment.lower():
                 date_obs = comment.split(delim)[1].split('/')[0].strip()
+            else:
+                date_obs = datetime.now()
 
             if 'facility' in comment.lower():
                 facility_name = comment.split(delim)[1].strip()
