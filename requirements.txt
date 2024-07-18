@@ -1,7 +1,7 @@
 dataclasses
-tomtoolkit==2.18.5
+tomtoolkit==2.19.4
 tom-scimma
-tom-nonlocalizedevents==0.7.7
+tom-nonlocalizedevents==0.8.1
 tom-alertstreams
 tom_tns
 gevent==21.12.0
