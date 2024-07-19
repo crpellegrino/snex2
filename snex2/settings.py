@@ -123,10 +123,6 @@ DATA_SHARING = {
         'DEFAULT_AUTHORS': os.getenv('HERMES_DEFAULT_AUTHORS', 'Your Default author list here'),
         'USER_TOPICS': ['hermes.test', 'hermes.message', 'hermes.discovery', 'hermes.photometry', 'hermes.spectroscopy'],
         'GROUP_NAMES': ['Hermes_group', 'SNEX'],
-        'DEFAULT_TELESCOPE': 'LCO 1m',
-        'DEFAULT_INSTRUMENT': 'Sinistro',
-        'DEFAULT_WAVELENGTH_UNITS': 'Å',
-        'DEFAULT_FLUX_UNITS': 'mJy',
         # Change this to whatever filtered mapping your data has from filter ID in the datum to TNS filter ID
         'FILTER_MAPPING': {
             'B': 'B-astrodon',
