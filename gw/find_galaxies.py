@@ -53,10 +53,22 @@ def generate_galaxy_list(eventlocalization, completeness=None, credzone=None, sk
     #MB_star = float(config.get('GALAXIES', 'MB_STAR'))
     
     try:
-        if skymap_filepath is not None:
-            prob, distmu, distsigma, distnorm = hp.read_map(skymap_filepath, field=[0,1,2,3], verbose=False)
+        if not eventlocalization.distance_mean:
+            ### This is a burst alert, so just read the probabilities from the map
+            ### and fix the distance to only look at nearby galaxies
+            if skymap_filepath is not None:
+                prob = hp.read_map(skymap_filepath, field=0, verbose=False)
+            else:
+                prob = hp.read_map(eventlocalization.skymap_url.replace('.multiorder.fits','.fits.gz'), field=0, verbose=False)
+            ### Fix distance vectors:
+            distmu = np.ones(len(prob)) * 10.0 # Fix to 10 Mpc
+            distsigma = np.ones(len(prob)) * 10.0 # Fix to 10 Mpc
+            distnorm = np.ones(len(prob)) # Flat prior?
         else:
-            prob, distmu, distsigma, distnorm = hp.read_map(eventlocalization.skymap_url.replace('.multiorder.fits','.fits.gz'), field=[0,1,2,3], verbose=False)
+            if skymap_filepath is not None:
+                prob, distmu, distsigma, distnorm = hp.read_map(skymap_filepath, field=[0,1,2,3], verbose=False)
+            else:
+                prob, distmu, distsigma, distnorm = hp.read_map(eventlocalization.skymap_url.replace('.multiorder.fits','.fits.gz'), field=[0,1,2,3], verbose=False)
 
     except Exception as e:
         logger.warning('Failed to read sky map for {}'.format(eventlocalization))
