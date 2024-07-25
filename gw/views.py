@@ -89,9 +89,10 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
             if t.filetype==3:
 
                 diff_file = os.path.join(t.filepath, t.filename)
+                diff_file = 'data/fits/'+diff_file.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '')
 
                 temp_filename = fits.getheader(diff_file)['TEMPLATE']
-                temp_filepath = [el.filepath for el in existing_observations if el.filename==temp_filename][0]
+                temp_filepath = ['data/fits/'+el.filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '') for el in existing_observations if el.filename==temp_filename][0]
 
                 triplet={
                     #'galaxy': galaxy,
@@ -108,11 +109,10 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
         rows = []
 
         for galaxy in galaxies:
-            if len(triplets)!=0:
-                row = {
-                    'galaxy': galaxy,
-                    'triplets':triplets
-                }
+            row = {
+                'galaxy': galaxy,
+                'triplets':triplets
+            }
 
         
 
