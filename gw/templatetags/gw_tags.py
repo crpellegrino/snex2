@@ -80,8 +80,11 @@ def galaxy_distribution(context, galaxies):
     return {'figure': figure}
 
 
-@register.inclusion_tag('gw/plot_triplets.html', takes_context=True)
-def plot_triplets(context, triplet, galaxy, display_type):
+@register.inclusion_tag('gw/plot_triplets.html')#, takes_context=True)
+def plot_triplets(triplet, galaxy, display_type):
+
+    #This can be galaxy sizes times some factor.
+    SIZE = 0.9/60 #deg
 
     plot_context = {}
 
@@ -95,10 +98,10 @@ def plot_triplets(context, triplet, galaxy, display_type):
 
         if display_type == 'list':
             ###TODO: Change this:
-            galaxy_coord = SkyCoord(228.691875, 31.223633, unit='deg')#galaxy.ra, galaxy.dec, unit='deg')
+            #galaxy_coord = SkyCoord(228.691875, 31.223633, unit='deg')#galaxy.ra, galaxy.dec, unit='deg')
             #galaxy_pix_ra, galaxy_pix_dec = skycoord_to_pixel(galaxy_coord, wcs)
-            img_coord_lower = SkyCoord(228.691875-0.9/60, 31.223633-0.9/60, unit='deg')
-            img_coord_upper = SkyCoord(228.691875+0.9/60, 31.223633+0.9/60, unit='deg')
+            img_coord_lower = SkyCoord(galaxy.ra-SIZE, galaxy.dec-SIZE, unit='deg')
+            img_coord_upper = SkyCoord(galaxy.ra+SIZE, galaxy.dec+SIZE, unit='deg')
 
             img_pixel_upper_ra, img_pixel_lower_dec = skycoord_to_pixel(img_coord_lower, wcs)
             img_pixel_lower_ra, img_pixel_upper_dec = skycoord_to_pixel(img_coord_upper, wcs)

@@ -21,7 +21,7 @@ from tom_common.hooks import run_hook
 from tom_targets.models import Target, TargetExtra
 from tom_observations.facility import get_service_class
 from tom_observations.models import ObservationRecord, ObservationGroup, DynamicCadence
-from custom_code.hooks import _return_session
+from custom_code.hooks import _return_session, _load_table
 from gw.hooks import ingest_gw_galaxy_into_snex1
 from custom_code.views import Snex1ConnectionError
 import logging
@@ -62,6 +62,13 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
     template_name = 'gw/galaxy_observations.html'
     
     def get_context_data(self, **kwargs):
+
+        db_session = _return_session(settings.SNEX1_DB_URL)
+
+        o4_galaxies = _load_table('o4_galaxies', db_address = settings.SNEX1_DB_URL)
+        photlco = _load_table('photlco', db_address = settings.SNEX1_DB_URL)
+
+
         context = super().get_context_data(**kwargs)
 
         sequence = EventSequence.objects.get(id=self.kwargs['id'])
@@ -70,42 +77,52 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
         galaxies = GWFollowupGalaxy.objects.filter(eventlocalization=loc)
         galaxies = galaxies.annotate(name=F("id"))
         context['galaxy_count'] = len(galaxies)
-        #TODO: Filter galaxies by observations, but for now we'll just take a subset and fake it
 
         context['superevent_id'] = sequence.nonlocalizedevent.event_id 
         context['superevent_index'] = sequence.nonlocalizedevent.id
 
+        existing_observations = db_session.query(photlco).filter(photlco.targetid==o4_galaxies.targetid).filter(o4_galaxies.event_id == sequence.nonlocalizedevent.event_id)
+
+        triplets=[]
+
+        for t in existing_observations:
+            if t.filetype==3:
+
+                diff_file = os.path.join(t.filepath, t.filename)
+
+                temp_filename = fits.getheader(diff_file)['TEMPLATE']
+                temp_filepath = [el.filepath for el in existing_observations if el.filename==temp_filename][0]
+
+                triplet={
+                    #'galaxy': galaxy,
+                    'obsdate': t.dateobs,
+                    'filter': t.filter,
+                    'exposure_time': t.exptime,
+                    'original': {'filename': '.'.join(diff_file.split('.')[:-3])+'.fits'},
+                    'template': {'filename': os.path.join(temp_filepath, temp_filename)},
+                    'diff': {'filename': diff_file}
+                }
+
+                triplets.append(triplet)
+
         rows = []
 
-        #TODO: Populate this dynamically
-        for galaxy in galaxies[:1]:
+        for galaxy in galaxies:
+            if len(triplets)!=0:
+                row = {
+                    'galaxy': galaxy,
+                    'triplets':triplets
+                }
 
-            row = {'galaxy': galaxy,
-                   'triplets': [{
-                       'obsdate': '2023-04-19',
-                       'filter': 'g',
-                       'exposure_time': 200,
-                       'original': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/obs.fits')},
-                       'template': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/ref.fits')},
-                       'diff': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/sub.fits')}
-                   },
-                   #{
-                   #    'obsdate': '2023-04-19',
-                   #    'filter': 'g',
-                   #    'exposure_time': 200,
-                   #    'original': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/obs.fits')},
-                   #    'template': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/ref.fits')},
-                   #    'diff': {'filename': os.path.join(BASE_DIR, 'data/fits/gw/sub.fits')}
-                   #}
-                   ]
-            }
+        
+
             rows.append(row)
 
         context['rows'] = rows
 
         return context
 
-
+#this is not yet implemented
 class GWFollowupGalaxyTripletView(TemplateView, LoginRequiredMixin):
 
     template_name = 'gw/galaxy_observations_individual.html'
