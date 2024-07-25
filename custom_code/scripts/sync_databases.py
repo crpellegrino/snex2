@@ -569,7 +569,7 @@ def update_target_extra(action, db_address=_SNEX2_DB):
             raise #continue
 
 
-def migrate_data():
+def run():
     """
     Migrates all changes from the SNex1 db to the SNex2 db,
     and afterwards deletes all the rows in the db_changes table
@@ -580,5 +580,3 @@ def migrate_data():
         update_target_extra(action, db_address=_SNEX2_DB)
         update_phot(action, db_address=_SNEX2_DB)
         update_spec(action, db_address=_SNEX2_DB)
-
-migrate_data()
