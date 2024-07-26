@@ -76,6 +76,7 @@ services:
             - ${SNEX_GW_FITS_PATH}:/snex2/data/fits/gw/
             - ${SNEX_FLOYDS_PATH}:/snex2/data/floyds/
             - ${SNEX_FLOYDS_WEB_PATH}:/snex2/data/WEB/floyds/
+            - ${SNEX_EXTDATA}:/snex2/data/fits/extdata/
     snex2-dev:
         image: snex2-dev:latest
         network_mode: bridge
@@ -139,3 +140,4 @@ services:
             - ${SNEX_GW_FITS_PATH}:/snex2/data/fits/gw/
             - ${SNEX_FLOYDS_PATH}:/snex2/data/floyds/
             - ${SNEX_FLOYDS_WEB_PATH}:/snex2/data/WEB/floyds/
+            - ${SNEX_EXTDATA}:/snex2/data/fits/extdata/
