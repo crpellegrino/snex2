@@ -91,9 +91,14 @@ def plot_triplets(triplet, galaxy, display_type):
     fig = go.Figure().set_subplots(1,3)
     
     for i, filetype in enumerate(['original', 'template', 'diff']):
-        hdu = fits.open(triplet[filetype]['filename'])
-        img = hdu[0].data
-        wcs = WCS(hdu[0].header)
+        img_file = triplet[filetype]['filename']
+        if img_file.endswith('fz'):
+            ext = 1
+        else:
+            ext = 0
+        hdu = fits.open(img_file)
+        img = hdu[ext].data
+        wcs = WCS(hdu[ext].header)
         hdu.close()
 
         if display_type == 'list':

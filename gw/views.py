@@ -81,34 +81,53 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
         context['superevent_id'] = sequence.nonlocalizedevent.event_id 
         context['superevent_index'] = sequence.nonlocalizedevent.id
 
-        existing_observations = db_session.query(photlco).filter(photlco.targetid==o4_galaxies.targetid).filter(o4_galaxies.event_id == sequence.nonlocalizedevent.event_id)
+        # Getting all images associated with the GW event
+        # identified by :sequence.nonlocalizedevent.event_id:
+        existing_data_in_photlco = db_session.query(photlco).filter(photlco.targetid==o4_galaxies.targetid).filter(o4_galaxies.event_id == sequence.nonlocalizedevent.event_id)
 
-        triplets=[]
+        rows = []
 
-        for t in existing_observations:
-            # Filtering for files that have been subtracted
-            if t.filetype==3:
+        for galaxy in galaxies:
+            row = {
+                'galaxy': galaxy,
+            }
+
+            triplets=[]
+
+            # Filtering only the diff images and templates belonging to :galaxy: a
+            # At this time I don't have a better way than to check if the name is similar
+            this_galaxy_existing_subtractions = existing_data_in_photlco.filter(photlco.filetype==3).filter(photlco.objname.contains(galaxy.catalog_objname.split()[1]))
+            this_galaxy_existing_templates = existing_data_in_photlco.filter(photlco.filetype==4).filter(photlco.objname.contains(galaxy.catalog_objname.split()[1]))
+
+
+            for t in this_galaxy_existing_subtractions:
 
                 # The supernova folder tree is mounted with a different name scheme on the SNEx2 docker
                 diff_path = 'data/fits/'+t.filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '')
                 diff_file = os.path.join(diff_path, t.filename)
 
+                if not os.path.isfile(diff_file):
+                    diff_file = diff_file+'.fz'
+                    # Grabbing the template file from the header of diff file
+                    # but if it's compressed, the header is in the second extension
+                    temp_file = fits.getheader(diff_file,ext=1)['TEMPLATE']
+                else:
+                    # Grabbing the template file from the header of diff file
+                    temp_file = fits.getheader(diff_file)['TEMPLATE']
+
+                # Looking for :temp_filename: in :existing_observations: and retrieving its corresponding :filepath:
+                temp_filepath = this_galaxy_existing_templates.filter(photlco.filename==temp_file)[0].filepath
+                temp_file = os.path.join('data/fits/'+temp_filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', ''), temp_file)
+                
+                if not os.path.isfile(temp_file):
+                    temp_file = temp_file+'.fz'
+
                 # The original file will be in the same folder as the difference image
                 # The diff file will end, for example, like .PS1.diff.fits
                 orig_file = '.'.join(diff_file.split('.')[:-3])+'.fits'
 
-                temp_file = fits.getheader(diff_file)['TEMPLATE']
-
-                # Looking for :temp_filename: in :existing_observations: and retrieving its corresponding :filepath:
-                temp_filepath = existing_observations.filter(photlco.filename==temp_file)[0].filepath
-                temp_file = os.path.join('data/fits/'+temp_filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', ''), temp_file)
-                
-                if not os.path.isfile(diff_file):
-                    diff_file = diff_file+'.fz'
                 if not os.path.isfile(orig_file):
                     orig_file = orig_file+'.fz'
-                if not os.path.isfile(temp_file):
-                    temp_file = temp_file+'.fz'
 
                 triplet={
                     #'galaxy': galaxy,
@@ -121,16 +140,10 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
                 }
 
                 triplets.append(triplet)
+            
+            row['triplets'] = triplets
+            rows.append(row)
 
-        rows = []
-
-        for galaxy in galaxies:
-            if len(triplets)!=0:
-                row = {
-                    'galaxy': galaxy,
-                    'triplets':triplets
-                }
-                rows.append(row)
 
         context['rows'] = rows
 
@@ -386,3 +399,45 @@ def cancel_galaxy_observations_view(request):
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
+
+for galaxy in galaxies:
+    row = {
+        'galaxy': galaxy,
+    }
+    triplets=[]
+    # Filtering only the diff images and templates belonging to :galaxy: a
+    # At this time I don't have a better way than to check if the name is similar
+    this_galaxy_existing_subtractions = existing_data_in_photlco.filter(photlco.filetype==3).filter(photlco.objname.contains(galaxy.catalog_objname.split()[1]))
+    this_galaxy_existing_templates = existing_data_in_photlco.filter(photlco.filetype==4).filter(photlco.objname.contains(galaxy.catalog_objname.split()[1]))
+    for t in this_galaxy_existing_subtractions:
+        # The supernova folder tree is mounted with a different name scheme on the SNEx2 docker
+        diff_path = 'data/fits/'+t.filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '')
+        diff_file = os.path.join(diff_path, t.filename)
+        if not os.path.isfile(diff_file):
+            diff_file = diff_file+'.fz'
+            # Grabbing the template file from the header of diff file
+            # but if it's compressed, the header is in the second extension
+            temp_file = fits.getheader(diff_file,ext=1)['TEMPLATE']
+        else:
+            # Grabbing the template file from the header of diff file
+            temp_file = fits.getheader(diff_file)['TEMPLATE']
+        # Looking for :temp_filename: in :existing_observations: and retrieving its corresponding :filepath:
+        temp_filepath = this_galaxy_existing_templates.filter(photlco.filename==temp_file)[0].filepath
+        temp_file = os.path.join('data/fits/'+temp_filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', ''), temp_file)
+        if not os.path.isfile(temp_file):
+            temp_file = temp_file+'.fz'
+        # The original file will be in the same folder as the difference image
+        # The diff file will end, for example, like .PS1.diff.fits
+        orig_file = '.'.join(diff_file.split('.')[:-3])+'.fits'
+        if not os.path.isfile(orig_file):
+            orig_file = orig_file+'.fz'
+        triplet={
+            #'galaxy': galaxy,
+            'obsdate': t.dateobs,
+            'filter': t.filter,
+            'exposure_time': t.exptime,
+            'original': {'filename': orig_file},
+            'template': {'filename': temp_file},
+            'diff': {'filename': diff_file}
+        }
+        triplets.append(triplet)
