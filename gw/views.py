@@ -86,21 +86,37 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
         triplets=[]
 
         for t in existing_observations:
+            # Filtering for files that have been subtracted
             if t.filetype==3:
 
-                diff_file = os.path.join(t.filepath, t.filename)
-                diff_file = 'data/fits/'+diff_file.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '')
+                # The supernova folder tree is mounted with a different name scheme on the SNEx2 docker
+                diff_path = 'data/fits/'+t.filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '')
+                diff_file = os.path.join(diff_path, t.filename)
 
-                temp_filename = fits.getheader(diff_file)['TEMPLATE']
-                temp_filepath = ['data/fits/'+el.filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', '') for el in existing_observations if el.filename==temp_filename][0]
+                # The original file will be in the same folder as the difference image
+                # The diff file will end, for example, like .PS1.diff.fits
+                orig_file = '.'.join(diff_file.split('.')[:-3])+'.fits'
+
+                temp_file = fits.getheader(diff_file)['TEMPLATE']
+
+                # Looking for :temp_filename: in :existing_observations: and retrieving its corresponding :filepath:
+                temp_filepath = existing_observations.filter(photlco.filename==temp_file)[0].filepath
+                temp_file = os.path.join('data/fits/'+temp_filepath.replace('/supernova/data/lsc/', '').replace('/supernova/data/', ''), temp_file)
+                
+                if not os.path.isfile(diff_file):
+                    diff_file = diff_file+'.fz'
+                if not os.path.isfile(orig_file):
+                    orig_file = orig_file+'.fz'
+                if not os.path.isfile(temp_file):
+                    temp_file = temp_file+'.fz'
 
                 triplet={
                     #'galaxy': galaxy,
                     'obsdate': t.dateobs,
                     'filter': t.filter,
                     'exposure_time': t.exptime,
-                    'original': {'filename': '.'.join(diff_file.split('.')[:-3])+'.fits'},
-                    'template': {'filename': os.path.join(temp_filepath, temp_filename)},
+                    'original': {'filename': orig_file},
+                    'template': {'filename': temp_file},
                     'diff': {'filename': diff_file}
                 }
 
@@ -109,14 +125,12 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
         rows = []
 
         for galaxy in galaxies:
-            row = {
-                'galaxy': galaxy,
-                'triplets':triplets
-            }
-
-        
-
-            rows.append(row)
+            if len(triplets)!=0:
+                row = {
+                    'galaxy': galaxy,
+                    'triplets':triplets
+                }
+                rows.append(row)
 
         context['rows'] = rows
 
