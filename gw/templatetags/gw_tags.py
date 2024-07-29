@@ -84,7 +84,7 @@ def galaxy_distribution(context, galaxies):
 def plot_triplets(triplet, galaxy, display_type):
 
     #This can be galaxy sizes times some factor.
-    SIZE = 0.9/60 #deg
+    HALF_SIZE = 0.9/60 #deg
 
     plot_context = {}
 
@@ -105,24 +105,41 @@ def plot_triplets(triplet, galaxy, display_type):
             ###TODO: Change this:
             #galaxy_coord = SkyCoord(228.691875, 31.223633, unit='deg')#galaxy.ra, galaxy.dec, unit='deg')
             #galaxy_pix_ra, galaxy_pix_dec = skycoord_to_pixel(galaxy_coord, wcs)
-            img_coord_lower = SkyCoord(galaxy.ra-SIZE, galaxy.dec-SIZE, unit='deg')
-            img_coord_upper = SkyCoord(galaxy.ra+SIZE, galaxy.dec+SIZE, unit='deg')
+            bottom_edge = SkyCoord(galaxy.ra, galaxy.dec-HALF_SIZE, unit='deg')
+            top_edge = SkyCoord(galaxy.ra, galaxy.dec+HALF_SIZE, unit='deg')
+            top_left = SkyCoord(galaxy.ra+HALF_SIZE/np.cos(top_edge.dec.rad), top_edge.dec.deg, unit='deg')
+            top_right = SkyCoord(galaxy.ra-HALF_SIZE/np.cos(top_edge.dec.rad), top_edge.dec.deg, unit='deg')
+            bot_left = SkyCoord(galaxy.ra+HALF_SIZE/np.cos(bottom_edge.dec.rad), bottom_edge.dec.deg, unit='deg')
+            bot_right = SkyCoord(galaxy.ra-HALF_SIZE/np.cos(bottom_edge.dec.rad), bottom_edge.dec.deg, unit='deg')
 
-            img_pixel_upper_ra, img_pixel_lower_dec = skycoord_to_pixel(img_coord_lower, wcs)
-            img_pixel_lower_ra, img_pixel_upper_dec = skycoord_to_pixel(img_coord_upper, wcs)
-            img = img[int(img_pixel_lower_ra):int(img_pixel_upper_ra), int(img_pixel_lower_dec):int(img_pixel_upper_dec)]
+            pix_top_left_ra, pix_top_left_dec = skycoord_to_pixel(top_left, wcs)
+            pix_top_right_ra, pix_top_right_dec = skycoord_to_pixel(top_right, wcs)
+            pix_bot_left_ra, pix_bot_left_dec = skycoord_to_pixel(bot_left, wcs)
+            pix_bot_right_ra, pix_bot_right_dec = skycoord_to_pixel(bot_right, wcs)
 
+            cut_out_ra_min = min(pix_top_left_ra,pix_top_right_ra,pix_bot_left_ra,pix_bot_right_ra)
+            cut_out_ra_max = max(pix_top_left_ra,pix_top_right_ra,pix_bot_left_ra,pix_bot_right_ra)
+            cut_out_dec_min = min(pix_top_left_dec,pix_top_right_dec,pix_bot_left_dec,pix_bot_right_dec)
+            cut_out_dec_max = max(pix_top_left_dec,pix_top_right_dec,pix_bot_left_dec,pix_bot_right_dec)
+
+            img = img[int(cut_out_ra_min):int(cut_out_ra_max), int(cut_out_dec_min):int(cut_out_dec_max)]
+
+        #not yet implemented
+        #else:
+        #
+        #    img_coord_lower = pixel_to_skycoord(0, 0, wcs)
+        #    img_coord_upper = pixel_to_skycoord(len(img[0,:]), len(img[:,0]), wcs)
+
+        if len(img>0) and len(img[0]>0):
+            x_coords = np.linspace(bot_left.ra.degree, bot_right.ra.degree, len(img[:,0]))
+            y_coords = np.linspace(bot_left.dec.degree, top_left.dec.degree, len(img[0,:]))
+            
+            zmin,zmax = [int(el) for el in ZScaleInterval().get_limits(img)]
+
+            fig.add_trace(go.Heatmap(x=x_coords, y=y_coords, z=img, zmin=zmin, zmax=zmax, showscale=False), row=1, col=i+1)
         else:
-
-            img_coord_lower = pixel_to_skycoord(0, 0, wcs)
-            img_coord_upper = pixel_to_skycoord(len(img[0,:]), len(img[:,0]), wcs)
-        
-        x_coords = np.linspace(img_coord_lower.ra.degree, img_coord_upper.ra.degree, len(img[:,0]))
-        y_coords = np.linspace(img_coord_lower.dec.degree, img_coord_upper.dec.degree, len(img[0,:]))
-        
-        zmin,zmax = [int(el) for el in ZScaleInterval().get_limits(img)]
-
-        fig.add_trace(go.Heatmap(x=x_coords, y=y_coords, z=img, zmin=zmin, zmax=zmax, showscale=False), row=1, col=i+1)
+            # This mainly happens when the WCS is off
+            fig.add_trace(go.Heatmap(x=[], y=[], z=[], showscale=False), row=1, col=i+1)
 
         source_coords = []
         if filetype == 'diff' and display_type == 'individual':

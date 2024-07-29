@@ -87,7 +87,7 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
 
         rows = []
 
-        for galaxy in galaxies:
+        for galaxy in galaxies[:5]:
             triplets=[]
 
             # Filtering only the diff images and templates belonging to :galaxy: a
