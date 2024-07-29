@@ -70,7 +70,7 @@ class EventSequenceGalaxiesTripletView(ListView, LoginRequiredMixin):
         galaxies = GWFollowupGalaxy.objects.filter(eventlocalization=loc)
         galaxies = galaxies.annotate(name=F("id"))
 
-        return galaxies
+        return galaxies.order_by('-score')
     
     def get_context_data(self, **kwargs):
 
@@ -96,7 +96,7 @@ class EventSequenceGalaxiesTripletView(ListView, LoginRequiredMixin):
 
         rows = []
 
-        for galaxy in galaxies:
+        for galaxy in context['object_list']:
             triplets=[]
 
             # Filtering only the diff images and templates belonging to :galaxy: a
