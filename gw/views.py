@@ -57,9 +57,20 @@ class GWFollowupGalaxyListView(LoginRequiredMixin, ListView):
         return context
 
 
-class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
+class EventSequenceGalaxiesTripletView(ListView, LoginRequiredMixin):
 
     template_name = 'gw/galaxy_observations.html'
+    paginate_by = 5
+    model = GWFollowupGalaxy
+    context_object_name = 'galaxies'
+
+    def get_queryset(self):
+        sequence = EventSequence.objects.get(id=self.kwargs['id'])
+        loc = sequence.localization
+        galaxies = GWFollowupGalaxy.objects.filter(eventlocalization=loc)
+        galaxies = galaxies.annotate(name=F("id"))
+
+        return galaxies
     
     def get_context_data(self, **kwargs):
 
@@ -73,9 +84,7 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
 
         sequence = EventSequence.objects.get(id=self.kwargs['id'])
         context['sequence'] = sequence
-        loc = sequence.localization
-        galaxies = GWFollowupGalaxy.objects.filter(eventlocalization=loc)
-        galaxies = galaxies.annotate(name=F("id"))
+        galaxies = self.get_queryset()
         context['galaxy_count'] = len(galaxies)
 
         context['superevent_id'] = sequence.nonlocalizedevent.event_id 
@@ -87,7 +96,7 @@ class EventSequenceGalaxiesTripletView(TemplateView, LoginRequiredMixin):
 
         rows = []
 
-        for galaxy in galaxies[:5]:
+        for galaxy in galaxies:
             triplets=[]
 
             # Filtering only the diff images and templates belonging to :galaxy: a

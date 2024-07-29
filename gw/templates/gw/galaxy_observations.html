@@ -19,6 +19,7 @@
 <div class="row">
   <div class="col-md-6">
     <span class="float-left">{{ galaxy_count }} Galaxies &nbsp;</span>
+    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
   </div>
   <div class="col-md-6">
     <span class="float-right"><a href="{% url 'nonlocalizedevents:detail' superevent_index %}">View this SuperEvent</a></span>
@@ -62,5 +63,6 @@
   {% endfor %}
   </tbody>
 </table>
+{% bootstrap_pagination page_obj extra=request.GET.urlencode %}
 {% endif %}
 {% endblock %}
