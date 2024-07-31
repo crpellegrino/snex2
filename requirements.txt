@@ -1,5 +1,5 @@
 dataclasses
-tomtoolkit==2.19.4
+tomtoolkit==2.19.5a0
 tom-scimma
 tom-nonlocalizedevents==0.8.1
 tom-alertstreams

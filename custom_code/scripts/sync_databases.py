@@ -81,7 +81,7 @@ Groups = load_table('groups', db_address=settings.SNEX1_DB_URL)
 ### And our SNex2 tables
 Data_Product = load_table('tom_dataproducts_dataproduct', db_address=_SNEX2_DB)
 Datum = load_table('tom_dataproducts_reduceddatum', db_address=_SNEX2_DB)
-Target = load_table('tom_targets_target', db_address=_SNEX2_DB)
+Target = load_table('tom_targets_basetarget', db_address=_SNEX2_DB)
 Target_Extra = load_table('tom_targets_targetextra', db_address=_SNEX2_DB)
 Targetname = load_table('tom_targets_targetname', db_address=_SNEX2_DB)
 Auth_Group = load_table('auth_group', db_address=_SNEX2_DB)
