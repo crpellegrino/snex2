@@ -10,6 +10,7 @@ from contextlib import contextmanager
 import os
 import datetime
 from django.conf import settings
+from tom_dataproducts.models import DataProduct, data_product_path
 
 _SNEX2_DB = 'postgresql://{}:{}@supernova.science.lco.global:5435/snex2'.format(os.environ.get('SNEX2_DB_USER'), os.environ.get('SNEX2_DB_PASSWORD'))
 
@@ -78,6 +79,7 @@ Classifications = load_table('classifications', db_address=settings.SNEX1_DB_URL
 Groups = load_table('groups', db_address=settings.SNEX1_DB_URL)
 
 ### And our SNex2 tables
+Data_Product = load_table('tom_dataproducts_dataproduct', db_address=_SNEX2_DB)
 Datum = load_table('tom_dataproducts_reduceddatum', db_address=_SNEX2_DB)
 Target = load_table('tom_targets_target', db_address=_SNEX2_DB)
 Target_Extra = load_table('tom_targets_targetextra', db_address=_SNEX2_DB)
@@ -350,8 +352,9 @@ def update_spec(action, db_address=_SNEX2_DB):
                     continue
 
                 targetid = spec_row.targetid
-                time = '{} {}'.format(spec_row.dateobs, spec_row.ut) 
-                spec = read_spec(spec_row.filepath.replace('/supernova/', '/snex2/') + spec_row.filename.replace('.fits', '.ascii'))
+                time = '{} {}'.format(spec_row.dateobs, spec_row.ut)
+                spec_filename = spec_row.filepath.replace('/supernova/', '/snex2/') + spec_row.filename.replace('.fits', '.ascii')
+                spec = read_spec(spec_filename)
                 spec_groupid = spec_row.groupidcode
     
                 with get_session(db_address=settings.SNEX1_DB_URL) as db_session:
@@ -377,9 +380,31 @@ def update_spec(action, db_address=_SNEX2_DB):
                                     break
 
                         elif action=='insert':
-                            newspec = Datum(target_id=targetid, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
+                            # First create the dataproduct for this spectra linking to the ascii file
+                            newdp = Data_Product(
+                                target_id=targetid, 
+                                product_id=spec_row.filename.replace('.fits', '.ascii'), 
+                                data_product_type='spectroscopy', 
+                                data=spec_row.filename.replace('.fits', '.ascii'),
+                                extra_data='',
+                                created=time,
+                                modified=time,
+                                featured=False)
+                            db_session.add(newdp)
+                            db_session.flush()
+
+                            # Then create the reduced datum referencing the data product
+                            newspec = Datum(target_id=targetid, data_product=newdp, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
+                            #newspec = Datum(target_id=targetid, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
                             db_session.add(newspec)
                             db_session.flush()
+
+                            # Finally update the newly created dataproduct using the Django path
+                            # This is normally done automatically using the Django ORM,
+                            # but since we're using sqlalchemy we have to do it manually
+                            snex2_dp = DataProduct.objects.get(id=newdp.id)
+                            snex2_dp.data = data_product_path(snex2_dp, snex2_dp.data)
+                            snex2_dp.save()
 
                             if spec_groupid is not None:
                                 update_permissions(int(spec_groupid), 77, newspec.id, 19) #View reduceddatum
