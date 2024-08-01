@@ -399,13 +399,6 @@ def update_spec(action, db_address=_SNEX2_DB):
                             db_session.add(newspec)
                             db_session.flush()
 
-                            # Finally update the newly created dataproduct using the Django path
-                            # This is normally done automatically using the Django ORM,
-                            # but since we're using sqlalchemy we have to do it manually
-                            snex2_dp = DataProduct.objects.get(id=newdp.id)
-                            snex2_dp.data = data_product_path(snex2_dp, snex2_dp.data)
-                            snex2_dp.save()
-
                             if spec_groupid is not None:
                                 update_permissions(int(spec_groupid), 77, newspec.id, 19) #View reduceddatum
  
@@ -425,6 +418,14 @@ def update_spec(action, db_address=_SNEX2_DB):
                             db_session.add(spec_extras_row)
 
                         db_session.commit()
+                        if action == 'insert':
+                            # Finally update the newly created dataproduct using the Django path
+                            # This is normally done automatically using the Django ORM,
+                            # but since we're using sqlalchemy we have to do it manually
+                            snex2_dp = DataProduct.objects.get(id=newdp.id)
+                            snex2_dp.data = data_product_path(snex2_dp, snex2_dp.data)
+                            snex2_dp.save()
+                            
             delete_row(Db_Changes, result.id, db_address=settings.SNEX1_DB_URL)
 
         except:
