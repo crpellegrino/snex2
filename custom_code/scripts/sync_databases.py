@@ -394,7 +394,7 @@ def update_spec(action, db_address=_SNEX2_DB):
                             db_session.flush()
 
                             # Then create the reduced datum referencing the data product
-                            newspec = Datum(target_id=targetid, data_product=newdp, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
+                            newspec = Datum(target_id=targetid, data_product_id=newdp.id, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
                             #newspec = Datum(target_id=targetid, timestamp=time, value=spec, data_type='spectroscopy', source_name='', source_location='')
                             db_session.add(newspec)
                             db_session.flush()
