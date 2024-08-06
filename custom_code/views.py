@@ -60,7 +60,7 @@ from guardian.shortcuts import assign_perm
 from tom_observations.models import ObservationRecord, ObservationGroup, DynamicCadence
 from tom_observations.facility import get_service_class
 from tom_observations.cadence import get_cadence_strategy
-from tom_observations.facilities.ocs import OCSSettings
+from tom_observations.facilities.lco import LCOSettings
 from tom_observations.views import ObservationCreateView, ObservationListView, ObservationRecordCancelView
 import requests
 from rest_framework.authtoken.models import Token
@@ -549,7 +549,7 @@ def cancel_observation(obs):
         last_obs = obs
     
     facility = get_service_class(last_obs.facility)()
-    ocs_settings = OCSSettings()
+    ocs_settings = LCOSettings()
     if last_obs.status not in ocs_settings.get_terminal_observing_states():
         success = facility.cancel_observation(last_obs.observation_id)
         if not success:
