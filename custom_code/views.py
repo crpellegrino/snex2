@@ -855,6 +855,7 @@ def scheduling_view(request):
 
         except Exception as e: 
             logger.error('Syncing with the SNEx1 database failed for target {} with error {}'.format(obs.target_id, e))
+            response_data = {'failure': 'Unable to modify sequence: see logs for error'}
             db_session.rollback()
         
         finally:
