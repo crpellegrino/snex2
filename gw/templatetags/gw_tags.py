@@ -43,7 +43,7 @@ def galaxy_distribution(galaxies):
              'score': galaxy.score}
         )
 
-    context = {'targets': galaxy_list[:25]}
+    context = {'targets': galaxy_list}
     return context
 
 
