@@ -31,57 +31,20 @@ def has_gw_permissions(user):
     return False
 
 
-@register.inclusion_tag('tom_targets/partials/target_distribution.html', takes_context=True)
-def galaxy_distribution(context, galaxies):
-    request = context['request']
-    page_number = int(request.GET.get('page', 1))
-    locations = galaxies.values_list('ra', 'dec')#, 'name')
-    data = []
-    for i, location in enumerate(locations):
-        obj_number = (page_number-1)*30 + i + 1
-        data.append(
-            dict(
-                lon=[location[0]-0.25, location[0]-0.25, location[0]+0.25, location[0]+0.25, location[0]-0.25],
-                lat=[location[1]-0.25, location[1]+0.25, location[1]+0.25, location[1]-0.25, location[1]-0.25],
-                text=[obj_number, obj_number, obj_number, obj_number, obj_number],
-                hoverinfo='lon+lat+text',
-                mode='lines',
-                type='scattergeo',
-                line=dict(color='black', width=2)
-            )
+@register.inclusion_tag('gw/partials/galaxy_aladin_skymap.html')
+def galaxy_distribution(galaxies):
+    galaxy_list = []
+
+    for galaxy in galaxies:
+        galaxy_list.append(
+            {'name': galaxy.catalog_objname, 
+             'ra': galaxy.ra, 
+             'dec': galaxy.dec,
+             'score': galaxy.score}
         )
-    data.append(
-        dict(
-            lon=list(range(0, 360, 60))+[180]*4,
-            lat=[0]*6+[-60, -30, 30, 60],
-            text=list(range(0, 360, 60))+[-60, -30, 30, 60],
-            hoverinfo='none',
-            mode='text',
-            type='scattergeo'
-        )
-    )
-    layout = {
-        'hovermode': 'closest',
-        'showlegend': False,
-        'geo': {
-            'projection': {
-                'type': 'mollweide',
-            },
-            'showcoastlines': False,
-            'showland': False,
-            'lonaxis': {
-                'showgrid': True,
-                'range': [0, 360],
-            },
-            'lataxis': {
-                'showgrid': True,
-                'range': [-90, 90],
-            },
-        },
-    }
-     
-    figure = offline.plot(go.Figure(data=data, layout=layout), output_type='div', show_link=False)
-    return {'figure': figure}
+
+    context = {'targets': galaxy_list[:25]}
+    return context
 
 
 @register.inclusion_tag('gw/plot_triplets.html')#, takes_context=True)
