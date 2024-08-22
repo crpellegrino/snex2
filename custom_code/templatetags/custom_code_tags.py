@@ -139,7 +139,7 @@ def airmass_plot(context):
         'figure': visibility_graph
     }
 
-def get_24hr_airmass(target, interval, airmass_limit):
+def get_24hr_airmass(target, interval, airmass_limit, halimit=4.8):
 
     plot_data = []
     
@@ -197,10 +197,14 @@ def get_24hr_airmass(target, interval, airmass_limit):
             sun_alt = observer.altaz(time_range, fixed_sun).alt
             obj_airmass = observer.altaz(time_range, fixed_target).secz
 
+            ha = observer.target_hour_angle(time_range, fixed_target).value
+            ha[ha > 12] = 24 - ha[ha > 12]
+
             bad_indices = np.argwhere(
                 (obj_airmass >= airmass_limit) |
                 (obj_airmass <= 1) |
-                (sun_alt > -12*u.deg)  #between astro twilights
+                (sun_alt > -12*u.deg) | #between astro twilights
+                (ha > halimit)
             )
 
             obj_airmass = [np.nan if i in bad_indices else float(x)
