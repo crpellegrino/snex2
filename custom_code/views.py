@@ -294,6 +294,7 @@ class CustomTargetCreateView(TargetCreateView):
                     logger.info('There exists another target near the coordinates {} {}'.format(form.cleaned_data['ra'], form.cleaned_data['dec']))
                     form.errors['ra'] = ['Target found with same or similar coordinates']
                     form.errors['dec'] = ['Target found with same or similar coordinates']
+                    self.object = None
                     return super().form_invalid(form)
 
                 name_lookup = form.cleaned_data['name'].replace('SN', '').replace('AT', '').replace(' ', '')
@@ -301,26 +302,49 @@ class CustomTargetCreateView(TargetCreateView):
                 if target_name_search.count() > 0.0:
                     logger.info('Target with name {} already exists'.format(form.cleaned_data['name']))
                     form.errors['name'] = ['Target found with same name']
+                    self.object = None
                     return super().form_invalid(form)
                 
                 groups = [g.name for g in form.cleaned_data['groups']]
                 self.object = form.save(form)
 
                 # Sync with SNEx1
-                db_session = _return_session()
-                run_hook('target_post_save', target=self.object, created=True, group_names=groups, wrapped_session=db_session)
-                db_session.commit()
+                self.run_hook_with_snex1(True, group_names=groups, return_session=True)
+                # db_session = _return_session()
+                # run_hook('target_post_save', target=self.object, created=True, group_names=groups, wrapped_session=db_session)
+                # db_session.commit()
             else:
                 logger.info('Submitting target failed with errors {}'.format(form.errors))
+                self.object = None
                 return super().form_invalid(form)
 
         # If that works, ingest extra stuff for SNEx2 target only
         # Run in separate atomic transaction block to avoid rolling back
         # target creation if extra data ingestion goes wrong
         with transaction.atomic():
-            run_hook('target_post_save', target=self.object, created=False)
+            #run_hook('target_post_save', target=self.object, created=False)
+            self.run_hook_with_snex1(False)
 
         return redirect(self.get_success_url())
+
+    def run_hook_with_snex1(self, created, group_names=None, return_session=False):
+        if return_session:
+            db_session = _return_session()
+            run_hook(
+                'target_post_save', 
+                target=self.object, 
+                created=created, 
+                group_names=group_names,
+                wrapped_session=db_session
+            )
+            db_session.commit()
+        else:
+            run_hook(
+                'target_post_save',
+                target=self.object,
+                created=created,
+                group_names=group_names
+            )
 
     def get_initial(self):
         return {
