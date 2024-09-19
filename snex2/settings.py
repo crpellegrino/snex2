@@ -122,7 +122,7 @@ DATA_SHARING = {
         'HERMES_API_KEY': os.getenv('HERMES_API_KEY', 'yourHermesAPIKeyHere'),
         'DEFAULT_AUTHORS': os.getenv('HERMES_DEFAULT_AUTHORS', 'Your Default author list here'),
         'USER_TOPICS': ['hermes.test', 'hermes.message', 'hermes.discovery', 'hermes.photometry', 'hermes.spectroscopy'],
-        'GROUP_NAMES': ['Hermes_group', 'SNEX'],
+        'GROUP_NAMES': ['Global SN Project', 'Hermes_group', 'SNEX'],
         # Change this to whatever filtered mapping your data has from filter ID in the datum to TNS filter ID
         'FILTER_MAPPING': {
             'B': 'B-astrodon',
