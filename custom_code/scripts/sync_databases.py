@@ -520,6 +520,10 @@ def update_target(action, db_address=_SNEX2_DB):
                             db_session.query(Targetname).filter(targetname_criteria).update({'name': t_name})
 
                         elif action=='insert':
+                            ### TODO: Check if target exists, and if not, add it here
+                            ### For some reason sometimes no target insertion is recorded in the db
+                            ### I think this happens if the target is added right as the syncing script runs
+                            ### (see targets 8556 and 8557 versus 8555)
                             existing_name = db_session.query(Targetname).filter(Targetname.name==t_name, Targetname.target_id==n_id).first()
                             if not existing_name:
                                 db_session.add(Targetname(name=t_name, target_id=n_id, created=datetime.datetime.utcnow(), modified=datetime.datetime.utcnow()))
