@@ -502,6 +502,7 @@ def update_target(action, db_address=_SNEX2_DB):
         try:
             name_id = nresult.rowid # The ID of the row in the targetnames table
             name_row = get_current_row(Target_Names, name_id, db_address=settings.SNEX1_DB_URL) # The row corresponding to name_id in the targetnames table
+            target_row = get_current_row(Targets, name_row.targetid, db_address=settings.SNEX1_DB_URL)
 
             if action!='delete':
                 n_id = name_row.targetid
@@ -520,10 +521,29 @@ def update_target(action, db_address=_SNEX2_DB):
                             db_session.query(Targetname).filter(targetname_criteria).update({'name': t_name})
 
                         elif action=='insert':
-                            ### TODO: Check if target exists, and if not, add it here
-                            ### For some reason sometimes no target insertion is recorded in the db
-                            ### I think this happens if the target is added right as the syncing script runs
-                            ### (see targets 8556 and 8557 versus 8555)
+                            ### Check if target exists, and if not, add it here
+                            ### This avoids a race condition if the target is added while this script is running
+                            existing_target_query = db_session.query(Target).filter(Target.id==target_row.id).first()
+                            if not existing_target_query:
+                                db_session.add(
+                                    Target(
+                                        id=target_row.id, 
+                                        name=t_name, 
+                                        ra=target_row.ra0, 
+                                        dec=target_row.dec0, 
+                                        modified=target_row.lastmodified, 
+                                        created=target_row.datecreated, 
+                                        type='SIDEREAL', 
+                                        epoch=2000, 
+                                        scheme=''
+                                    )
+                                )
+                                if 'postgresql' in db_address:
+                                    db_session.execute(select(func.setval('tom_targets_target_id_seq', target_row.id)))
+                                update_permissions(int(target_row.groupidcode), 47, target_row.id, 12) #Change target
+                                update_permissions(int(target_row.groupidcode), 48, target_row.id, 12) #Delete target
+                                update_permissions(int(target_row.groupidcode), 49, target_row.id, 12) #View target
+
                             existing_name = db_session.query(Targetname).filter(Targetname.name==t_name, Targetname.target_id==n_id).first()
                             if not existing_name:
                                 db_session.add(Targetname(name=t_name, target_id=n_id, created=datetime.datetime.utcnow(), modified=datetime.datetime.utcnow()))
